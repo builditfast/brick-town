@@ -3,9 +3,9 @@
 **See where your money goes, one brick at a time.** Brick Town is a playful spending tracker for one person or a couple. Every €25 you spend is one brick, every spending category is a tower, and Penny, a gold coin, cheers you on as your town grows.
 
 <p align="center">
-  <a href="media/brick-town-showreel.mp4"><img src="media/brick-town-preview.gif" alt="Brick Town showreel" width="720"></a>
+  <a href="https://github.com/builditfast/brick-town/raw/master/media/brick-town-showreel.mp4"><img src="media/brick-town-preview.gif" alt="Brick Town showreel" width="720"></a>
   <br>
-  <sub>15-second showreel. Click it for the full-quality video.</sub>
+  <sub>15-second showreel. Click it to download the full-quality video (MP4, 7 MB).</sub>
 </p>
 
 ## What it does
