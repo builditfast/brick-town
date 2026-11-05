@@ -8,6 +8,12 @@
   <sub>15-second showreel. Click it to download the full-quality video (MP4, 7 MB).</sub>
 </p>
 
+<p align="center">
+  <a href="https://github.com/builditfast/brick-town/raw/master/media/brick-town-showreel-portrait.mp4"><img src="media/poster-portrait.jpg" alt="Brick Town vertical showreel" width="180"></a>
+  <br>
+  <sub>Also as a vertical video for Shorts and Reels. Click it to download (MP4, 7 MB).</sub>
+</p>
+
 ## Screenshots
 
 <table>
