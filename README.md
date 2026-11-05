@@ -8,6 +8,25 @@
   <sub>15-second showreel. Click it to download the full-quality video (MP4, 7 MB).</sub>
 </p>
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="media/screenshots/month.png" width="200" alt="Month screen"><br><sub>Your month as towers</sub></td>
+    <td align="center"><img src="media/screenshots/add-a-brick.png" width="200" alt="Add a brick"><br><sub>Add a brick</sub></td>
+    <td align="center"><img src="media/screenshots/weekly-recap.png" width="200" alt="Weekly recap"><br><sub>Weekly recap</sub></td>
+    <td align="center"><img src="media/screenshots/month-done.png" width="200" alt="Month done"><br><sub>Month done</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="media/screenshots/settle-up.png" width="200" alt="Settle up"><br><sub>Settle up with your partner</sub></td>
+    <td align="center"><img src="media/screenshots/import-statement.png" width="200" alt="Import a statement"><br><sub>Import a bank statement</sub></td>
+    <td align="center"><img src="media/screenshots/compare.png" width="200" alt="Compare months"><br><sub>This month against the last</sub></td>
+    <td align="center"><img src="media/screenshots/trail.png" width="200" alt="Trail"><br><sub>Your trail of goals</sub></td>
+  </tr>
+</table>
+
+<sub>All names and amounts are sample data.</sub>
+
 ## What it does
 
 - **Add a brick in seconds.** Type the amount on the numpad, pick a tower, done. The Month screen shows what you spent and what is left for today and for the month.
@@ -15,6 +34,7 @@
 - **Gold days and streaks.** A day with no spending is a gold €0 day, and logging every day keeps your streak alive. A gentle evening reminder at 20:00 only comes on a day you have not logged yet.
 - **One town for two.** Invite your partner with a link and you share the same towers, bills and budget. Mark a brick as shared and **Settle up** shows who owes whom, split 50/50.
 - **Weekly recap and month done.** Every Sunday at 18:00 a recap shows your week against the last one. When a pay month ends, the month done screen hands you its trophy.
+- **Compare and trail.** See this month against the last one, tower by tower, and follow a trail of goals such as a no-spend weekend, a month under budget or a 30-day streak.
 - **Import a bank statement.** Bring in a CSV or PDF statement and review the rows before they become bricks. A PDF is read on the server in memory and never stored.
 - **Home-screen widgets (Android).** Today's number, the month's towers and your streak without opening the app, plus a one-tap "add a brick".
 - **Works offline.** Bricks added without a connection wait on the phone and sync when you are back online.
