@@ -1,0 +1,14 @@
+.git
+.gradle
+build
+**/build
+.idea
+.fleet
+local.properties
+*.iml
+iosApp
+composeApp/build
+shared/build
+server/build
+.env
+.env.local

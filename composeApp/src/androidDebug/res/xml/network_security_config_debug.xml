@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Plain HTTP to the dev server on this machine, as the emulator (10.0.2.2)
+     and `adb reverse` (localhost, 127.0.0.1) reach it. A debug build pointed
+     at any other http:// host, such as a LAN or Tailscale IP on a real phone,
+     fails with "CLEARTEXT communication not permitted" until it is added here. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <!-- The owner's Mac on the private Tailscale network, for a debug APK on his phone. -->
+        <domain includeSubdomains="false">100.116.49.56</domain>
+    </domain-config>
+</network-security-config>

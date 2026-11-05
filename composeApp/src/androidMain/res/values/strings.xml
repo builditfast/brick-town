@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Brick Town</string>
+    <string name="widget_month_name">Today in Brick Town</string>
+    <string name="widget_month_description">What is left to spend today and this month.</string>
+    <string name="widget_streak_name">Brick Town streak</string>
+    <string name="widget_streak_description">Your day streak. Tap to open the town.</string>
+    <string name="widget_add_name">Add a brick</string>
+    <string name="widget_add_description">Opens the numpad to add a brick.</string>
+</resources>

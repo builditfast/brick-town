@@ -1,0 +1,31 @@
+# Caddy auto-provisions Let's Encrypt TLS for ${DOMAIN}.
+# For local dev, set DOMAIN=localhost and ACME_EMAIL=anything — Caddy uses its
+# internal CA and you'll need to trust the local root certificate.
+
+{
+    email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+    encode gzip zstd
+
+    # Forward everything to the Ktor server.
+    reverse_proxy server:8080 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}

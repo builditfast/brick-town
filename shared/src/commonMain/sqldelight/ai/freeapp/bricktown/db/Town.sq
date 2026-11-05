@@ -1,0 +1,267 @@
+-- The phone's copy of one town. Every table follows the same rule:
+--   pending = 1  a change made on this phone that the server has not
+--                confirmed yet; a refresh keeps the row over the server's.
+--   deleted = 1  a delete waiting in the outbox; the row stays, hidden, so a
+--                refresh cannot bring the server's copy back.
+-- Rows with pending = 0 are the server's and are replaced wholesale by every
+-- refresh. There is no UPSERT ... WHERE here: minSdk 26 ships SQLite 3.18.
+
+CREATE TABLE IF NOT EXISTS TownRow (
+    id                  TEXT NOT NULL PRIMARY KEY,
+    ownerId             TEXT NOT NULL,
+    name                TEXT NOT NULL,
+    monthlyBudgetCents  INTEGER NOT NULL,
+    payday              INTEGER NOT NULL,
+    currency            TEXT NOT NULL,
+    billsFirst          INTEGER NOT NULL,
+    timeZone            TEXT NOT NULL,
+    createdAt           TEXT NOT NULL,
+    viewerId            TEXT NOT NULL,
+    -- Pending invites as the snapshot's JSON: online-only, never edited here.
+    invitesJson         TEXT NOT NULL DEFAULT '[]',
+    serverTime          TEXT NOT NULL,
+    pending             INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS MemberRow (
+    userId      TEXT NOT NULL PRIMARY KEY,
+    name        TEXT NOT NULL,
+    initial     TEXT NOT NULL,
+    colorIndex  INTEGER NOT NULL,
+    role        TEXT NOT NULL,
+    canEdit     INTEGER NOT NULL,
+    canManage   INTEGER NOT NULL,
+    joinedAt    TEXT NOT NULL,
+    pending     INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS CategoryRow (
+    id          TEXT NOT NULL PRIMARY KEY,
+    name        TEXT NOT NULL,
+    short       TEXT NOT NULL,
+    colorIndex  INTEGER NOT NULL,
+    capCents    INTEGER,
+    position    INTEGER NOT NULL,
+    pending     INTEGER NOT NULL DEFAULT 0,
+    deleted     INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS ExpenseRow (
+    id            TEXT NOT NULL PRIMARY KEY,
+    categoryId    TEXT NOT NULL,
+    amountCents   INTEGER NOT NULL,
+    date          TEXT NOT NULL,
+    note          TEXT NOT NULL,
+    recurring     INTEGER NOT NULL,
+    shared        INTEGER NOT NULL,
+    refund        INTEGER NOT NULL,
+    paidBy        TEXT NOT NULL,
+    settledAt     TEXT,
+    createdAt     TEXT NOT NULL,
+    pending       INTEGER NOT NULL DEFAULT 0,
+    deleted       INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS GoldMarkRow (
+    date        TEXT NOT NULL PRIMARY KEY,
+    markedBy    TEXT NOT NULL,
+    pending     INTEGER NOT NULL DEFAULT 0,
+    deleted     INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS BillSkipRow (
+    monthStart  TEXT NOT NULL,
+    seriesKey   TEXT NOT NULL,
+    pending     INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (monthStart, seriesKey)
+);
+
+-- Reads. Hidden (deleted) rows never reach a screen.
+
+selectTown:
+SELECT * FROM TownRow LIMIT 1;
+
+selectMembers:
+SELECT * FROM MemberRow ORDER BY joinedAt, userId;
+
+selectCategories:
+SELECT * FROM CategoryRow WHERE deleted = 0 ORDER BY position, id;
+
+selectExpenses:
+SELECT * FROM ExpenseRow WHERE deleted = 0 ORDER BY date DESC, createdAt DESC, id;
+
+selectGoldMarks:
+SELECT * FROM GoldMarkRow WHERE deleted = 0 ORDER BY date;
+
+selectBillSkips:
+SELECT * FROM BillSkipRow ORDER BY monthStart, seriesKey;
+
+selectCategoryById:
+SELECT * FROM CategoryRow WHERE id = :id;
+
+selectExpenseById:
+SELECT * FROM ExpenseRow WHERE id = :id;
+
+selectGoldByDate:
+SELECT * FROM GoldMarkRow WHERE date = :date;
+
+countCategories:
+SELECT COUNT(*) FROM CategoryRow WHERE deleted = 0;
+
+countTownRows:
+SELECT COUNT(*) FROM TownRow;
+
+-- Writes made on this phone: the row lands pending.
+
+putTownPending:
+INSERT OR REPLACE INTO TownRow(id, ownerId, name, monthlyBudgetCents, payday, currency, billsFirst, timeZone, createdAt, viewerId, invitesJson, serverTime, pending)
+VALUES (:id, :ownerId, :name, :monthlyBudgetCents, :payday, :currency, :billsFirst, :timeZone, :createdAt, :viewerId, :invitesJson, :serverTime, 1);
+
+putMemberPending:
+INSERT OR REPLACE INTO MemberRow(userId, name, initial, colorIndex, role, canEdit, canManage, joinedAt, pending)
+VALUES (:userId, :name, :initial, :colorIndex, :role, :canEdit, :canManage, :joinedAt, 1);
+
+putCategoryPending:
+INSERT OR REPLACE INTO CategoryRow(id, name, short, colorIndex, capCents, position, pending, deleted)
+VALUES (:id, :name, :short, :colorIndex, :capCents, :position, 1, 0);
+
+hideCategory:
+UPDATE CategoryRow SET pending = 1, deleted = 1 WHERE id = :id;
+
+putExpensePending:
+INSERT OR REPLACE INTO ExpenseRow(id, categoryId, amountCents, date, note, recurring, shared, refund, paidBy, settledAt, createdAt, pending, deleted)
+VALUES (:id, :categoryId, :amountCents, :date, :note, :recurring, :shared, :refund, :paidBy, :settledAt, :createdAt, 1, 0);
+
+hideExpense:
+UPDATE ExpenseRow SET pending = 1, deleted = 1 WHERE id = :id;
+
+moveExpensesPending:
+UPDATE ExpenseRow SET categoryId = :into, pending = 1 WHERE categoryId = :from AND deleted = 0;
+
+settlePending:
+UPDATE ExpenseRow SET settledAt = :at, pending = 1
+WHERE shared = 1 AND settledAt IS NULL AND deleted = 0 AND date <= :upTo;
+
+putGoldPending:
+INSERT OR REPLACE INTO GoldMarkRow(date, markedBy, pending, deleted) VALUES (:date, :markedBy, 1, 0);
+
+hideGold:
+UPDATE GoldMarkRow SET pending = 1, deleted = 1 WHERE date = :date;
+
+putBillSkipPending:
+INSERT OR REPLACE INTO BillSkipRow(monthStart, seriesKey, pending) VALUES (:monthStart, :seriesKey, 1);
+
+setCategoryPosition:
+UPDATE CategoryRow SET position = :position, pending = 1 WHERE id = :id AND deleted = 0;
+
+-- A send was acknowledged: the pending state ends. A delete leaves no row.
+
+settleTownPending:
+UPDATE TownRow SET pending = 0 WHERE id = :id;
+
+settleMemberPending:
+UPDATE MemberRow SET pending = 0 WHERE userId = :userId;
+
+settleCategoryPending:
+UPDATE CategoryRow SET pending = 0 WHERE id = :id AND deleted = 0;
+
+dropCategory:
+DELETE FROM CategoryRow WHERE id = :id;
+
+settleExpensePending:
+UPDATE ExpenseRow SET pending = 0 WHERE id = :id AND deleted = 0;
+
+dropExpense:
+DELETE FROM ExpenseRow WHERE id = :id;
+
+settleGoldPending:
+UPDATE GoldMarkRow SET pending = 0 WHERE date = :date AND deleted = 0;
+
+dropGold:
+DELETE FROM GoldMarkRow WHERE date = :date;
+
+settleBillSkipPending:
+UPDATE BillSkipRow SET pending = 0 WHERE monthStart = :monthStart AND seriesKey = :seriesKey;
+
+-- A settle or a merge changed many bricks at once; once acknowledged, the ones
+-- it touched stop being pending.
+settleExpensesSettledUpTo:
+UPDATE ExpenseRow SET pending = 0 WHERE pending = 1 AND deleted = 0 AND shared = 1 AND settledAt IS NOT NULL AND date <= :upTo;
+
+settleExpensesIn:
+UPDATE ExpenseRow SET pending = 0 WHERE pending = 1 AND deleted = 0 AND categoryId = :categoryId;
+
+-- Refresh: drop what the server owns, then lay the snapshot in without
+-- touching a pending row (the primary key makes IGNORE skip it).
+
+deleteSyncedTown:
+DELETE FROM TownRow WHERE pending = 0;
+
+deleteSyncedMembers:
+DELETE FROM MemberRow WHERE pending = 0;
+
+deleteSyncedCategories:
+DELETE FROM CategoryRow WHERE pending = 0;
+
+deleteSyncedExpenses:
+DELETE FROM ExpenseRow WHERE pending = 0;
+
+deleteSyncedGoldMarks:
+DELETE FROM GoldMarkRow WHERE pending = 0;
+
+deleteSyncedBillSkips:
+DELETE FROM BillSkipRow WHERE pending = 0;
+
+lendTown:
+INSERT OR IGNORE INTO TownRow(id, ownerId, name, monthlyBudgetCents, payday, currency, billsFirst, timeZone, createdAt, viewerId, invitesJson, serverTime, pending)
+VALUES (:id, :ownerId, :name, :monthlyBudgetCents, :payday, :currency, :billsFirst, :timeZone, :createdAt, :viewerId, :invitesJson, :serverTime, 0);
+
+lendMember:
+INSERT OR IGNORE INTO MemberRow(userId, name, initial, colorIndex, role, canEdit, canManage, joinedAt, pending)
+VALUES (:userId, :name, :initial, :colorIndex, :role, :canEdit, :canManage, :joinedAt, 0);
+
+lendCategory:
+INSERT OR IGNORE INTO CategoryRow(id, name, short, colorIndex, capCents, position, pending, deleted)
+VALUES (:id, :name, :short, :colorIndex, :capCents, :position, 0, 0);
+
+lendExpense:
+INSERT OR IGNORE INTO ExpenseRow(id, categoryId, amountCents, date, note, recurring, shared, refund, paidBy, settledAt, createdAt, pending, deleted)
+VALUES (:id, :categoryId, :amountCents, :date, :note, :recurring, :shared, :refund, :paidBy, :settledAt, :createdAt, 0, 0);
+
+lendGold:
+INSERT OR IGNORE INTO GoldMarkRow(date, markedBy, pending, deleted) VALUES (:date, :markedBy, 0, 0);
+
+lendBillSkip:
+INSERT OR IGNORE INTO BillSkipRow(monthStart, seriesKey, pending) VALUES (:monthStart, :seriesKey, 0);
+
+-- The server's answer to a sent write replaces the row (not pending any more).
+
+applyMember:
+INSERT OR REPLACE INTO MemberRow(userId, name, initial, colorIndex, role, canEdit, canManage, joinedAt, pending)
+VALUES (:userId, :name, :initial, :colorIndex, :role, :canEdit, :canManage, :joinedAt, 0);
+
+-- Wipes: leaving, a deleted town, a 404 and sign-out all empty everything.
+
+deleteAllTown:
+DELETE FROM TownRow;
+
+deleteAllMembers:
+DELETE FROM MemberRow;
+
+deleteAllCategories:
+DELETE FROM CategoryRow;
+
+deleteAllExpenses:
+DELETE FROM ExpenseRow;
+
+deleteAllGoldMarks:
+DELETE FROM GoldMarkRow;
+
+deleteAllBillSkips:
+DELETE FROM BillSkipRow;
+
+hasPendingTown:
+SELECT COUNT(*) FROM TownRow WHERE pending = 1;
+
+deleteBillSkip:
+DELETE FROM BillSkipRow WHERE monthStart = :monthStart AND seriesKey = :seriesKey;

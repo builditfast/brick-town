@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 6 to 11. The session tokens stay on this device: the Keystore key
+     that encrypts them cannot leave it, so a restored copy could never be read,
+     and a backup is one more place a refresh token could be lifted from.
+     Keep the file name in step with KeystoreTokenStore.PREFS (shared module). -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="secure_tokens.xml" />
+</full-backup-content>

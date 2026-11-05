@@ -1,0 +1,96 @@
+{
+  "spec": {
+    "tool": "cases",
+    "flags": [
+      {"name": "everyone", "default": true, "description": "On for every caller."},
+      {"name": "dark", "default": false, "description": "Shipped switched off."},
+      {"name": "export.excel", "default": true, "plans": ["pro", "group"], "description": "Paid plans only."},
+      {"name": "cron.digest", "default": true, "scope": "server", "description": "Never sent to a client."}
+    ]
+  },
+  "cases": [
+    {
+      "why": "no state file: every flag at its spec default",
+      "state": null,
+      "checks": [
+        ["everyone", null, true],
+        ["dark", null, false],
+        ["export.excel", "pro", true],
+        ["export.excel", "group", true],
+        ["export.excel", "free", false],
+        ["export.excel", null, false],
+        ["cron.digest", null, true],
+        ["not.declared", "pro", false]
+      ]
+    },
+    {
+      "why": "the owner turns a feature off for everyone",
+      "state": {"everyone": {"on": false}},
+      "checks": [["everyone", "pro", false], ["everyone", null, false]]
+    },
+    {
+      "why": "a bare boolean is the older state shape",
+      "state": {"dark": true, "everyone": false},
+      "checks": [["dark", null, true], ["everyone", null, false]]
+    },
+    {
+      "why": "plans set to null opens a paid feature to every plan",
+      "state": {"export.excel": {"plans": null}},
+      "checks": [["export.excel", "free", true], ["export.excel", null, true]]
+    },
+    {
+      "why": "plans narrow a feature that was for everyone",
+      "state": {"everyone": {"plans": ["group"]}},
+      "checks": [["everyone", "pro", false], ["everyone", "group", true], ["everyone", null, false]]
+    },
+    {
+      "why": "off wins over plans",
+      "state": {"export.excel": {"on": false, "plans": ["pro"]}},
+      "checks": [["export.excel", "pro", false]]
+    },
+    {
+      "why": "an empty plans list means no plan gets it",
+      "state": {"everyone": {"plans": []}},
+      "checks": [["everyone", "pro", false], ["everyone", null, false]]
+    },
+    {
+      "why": "bad fields are ignored one by one, unknown names are dropped",
+      "state": {
+        "everyone": "yes",
+        "dark": {"on": "true"},
+        "export.excel": {"on": false, "plans": "pro"},
+        "ghost": {"on": true}
+      },
+      "checks": [
+        ["everyone", null, true],
+        ["dark", null, false],
+        ["export.excel", "pro", false],
+        ["ghost", null, false]
+      ]
+    },
+    {
+      "why": "a state file that is not an object means defaults",
+      "state": [1, 2],
+      "checks": [["everyone", null, true], ["dark", null, false]]
+    },
+    {
+      "why": "a state file that is not JSON means defaults",
+      "state_raw": "{\"everyone\": {\"on\": fa",
+      "checks": [["everyone", null, true], ["export.excel", "pro", true]]
+    }
+  ],
+  "for_plan": [
+    {
+      "why": "a free caller gets every client flag, server-only ones left out",
+      "state": null,
+      "plan": "free",
+      "expect": {"dark": false, "everyone": true, "export.excel": false}
+    },
+    {
+      "why": "a pro caller after the owner switched one feature off",
+      "state": {"everyone": {"on": false}},
+      "plan": "pro",
+      "expect": {"dark": false, "everyone": false, "export.excel": true}
+    }
+  ]
+}

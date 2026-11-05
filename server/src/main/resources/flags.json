@@ -1,0 +1,61 @@
+{
+  "tool": "bricktown",
+  "flags": [
+    {
+      "name": "town.share",
+      "default": true,
+      "scope": "both",
+      "description": "Invite a second person to the town and join with a code.",
+      "since": "1.0.0"
+    },
+    {
+      "name": "town.settle",
+      "default": true,
+      "scope": "both",
+      "description": "Settle up shared bricks.",
+      "since": "1.0.0"
+    },
+    {
+      "name": "town.import",
+      "default": true,
+      "scope": "app",
+      "description": "Import a bank statement on the phone.",
+      "since": "1.0.0"
+    },
+    {
+      "name": "town.export",
+      "default": true,
+      "scope": "app",
+      "description": "Export everything as CSV.",
+      "since": "1.0.0"
+    },
+    {
+      "name": "penny.nudge",
+      "default": true,
+      "scope": "app",
+      "description": "The evening nudge from Penny.",
+      "since": "1.0.0"
+    },
+    {
+      "name": "penny.recap",
+      "default": true,
+      "scope": "app",
+      "description": "The weekly recap card and Sunday notification.",
+      "since": "1.0.0"
+    },
+    {
+      "name": "widgets",
+      "default": true,
+      "scope": "app",
+      "description": "Home-screen widgets: today's money, the streak and Add a brick.",
+      "since": "1.1.0"
+    },
+    {
+      "name": "import.pdf",
+      "default": true,
+      "scope": "both",
+      "description": "Import a PDF bank statement, read on this server and never stored.",
+      "since": "1.1.0"
+    }
+  ]
+}

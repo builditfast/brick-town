@@ -1,0 +1,32 @@
+-- Writes the server has not confirmed yet, oldest first. One table for every
+-- entity: `kind` names the write ("expense.put") and the OutboxSender that
+-- handles it, `payload` is that sender's own JSON. Per-user data: the outbox
+-- registers its own wipe on every session end and start (Outbox.clear).
+-- AUTOINCREMENT keeps ids rising after a wipe, so an old id is never reused.
+
+CREATE TABLE IF NOT EXISTS OutboxRow (
+    id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    kind    TEXT NOT NULL,
+    payload TEXT NOT NULL
+);
+
+insert:
+INSERT INTO OutboxRow(kind, payload) VALUES (:kind, :payload);
+
+lastInsertedId:
+SELECT last_insert_rowid();
+
+selectOldest:
+SELECT * FROM OutboxRow ORDER BY id LIMIT 1;
+
+countAll:
+SELECT COUNT(*) FROM OutboxRow;
+
+countById:
+SELECT COUNT(*) FROM OutboxRow WHERE id = :id;
+
+deleteById:
+DELETE FROM OutboxRow WHERE id = :id;
+
+deleteAll:
+DELETE FROM OutboxRow;

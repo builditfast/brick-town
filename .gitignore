@@ -1,0 +1,67 @@
+# Gradle files
+.gradle/
+build/
+**/build/
+!src/**/build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log/OS Files
+*.log
+.DS_Store
+
+# Android Studio generated files and folders
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+output.json
+
+# IntelliJ
+*.iml
+.idea/
+.kotlin
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# Claude Code per-project state
+.claude/
+
+# Keystore files
+*.jks
+*.keystore
+*.p12
+
+# Env files (may contain secrets)
+.env
+.env.local
+env.properties
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
+# Android Profiling
+*.hprof
+
+# Xcode
+xcuserdata
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+graphify-out/
+__pycache__/
+
+# Working files kept on this machine, not published
+design/
+docs/
+tools/
+CLAUDE.md
+AGENTS.md
+template.yaml
+KMP_LIBRARIES_2026.md
+scaffold-new-project.sh
